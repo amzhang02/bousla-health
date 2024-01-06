@@ -1,0 +1,20 @@
+{% extends './base.html' %}
+{% block content%}
+<h1 class="title">Search Results for {{search_term}}</h1>
+{% for post in posts %}
+<div style="margin-bottom:20px;" class = "box has-background-light">
+  <div class="box"> 
+    <p class="has-text-info"> {{post.account_username}} </p>
+    <span class="tag">
+      {{post.category}}
+    </span>
+    <p> {{post.text}}</p>
+    <a>
+      <span class="icon is-small"><i class="fa-solid fa-circle-exclamation"></i></span>
+      <span>{{post.engagement}}</span>
+    </a>
+  </div>
+</div>
+  {% endfor %}
+  <a href="/">return to all posts</a>
+{% endblock content%}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bousla Health Check</title>
+    <link rel="icon" type="image/x-icon" href="">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <script src="https://kit.fontawesome.com/84cd86bee6.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <section class="hero is-info">
+    <nav class="navbar" role="navigation" aria-label="main navigation">  
+        <div class="hero-body">
+            <p class="title">
+              Bousla Health Check
+            </p>
+            <p class="subtitle">
+              A way for health care professionals to view current health trends
+            </p>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a href="{{ url_for('auth.logout') }}" class="button is-light">
+                  Logout
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>   
+      </nav>
+    </section>
+        {% block content %}{% endblock %}
+      
+  </body>
+</html>

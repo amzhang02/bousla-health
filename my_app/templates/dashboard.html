@@ -1,0 +1,273 @@
+{% extends './base.html' %}
+{% block content%}
+<style>
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .filters {
+    margin-bottom: 20px;
+  }
+
+  .select {
+    margin-bottom: 10px;
+  }
+
+  /* Add more styles for tabs, inputs, buttons, etc. */
+</style>
+
+
+<script>
+  let currentUserID = '{{ userID }}'; // Access the userID passed in the HTML template
+  let cur_posts = JSON.parse('{{ posts | tojson | safe }}');
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectElement = document.querySelector('.select select');
+  selectElement.addEventListener('change', function() {
+    const selectedOption = this.value;
+    // Perform actions based on the selected option
+    switch (selectedOption) {
+      case 'recent':
+        cur_posts = JSON.parse('{{ postsSortByTime | tojson | safe }}');
+        displayPosts();
+        break;
+      case 'hot':
+        // Handle hot posts
+        cur_posts = JSON.parse('{{ postsSortByEngagement | tojson | safe }}');
+        displayPosts();
+        break;
+      default:
+        break;
+    }
+  });
+  displayPosts();
+  
+  const searchButton = document.querySelector('.button.is-info');
+  const searchInput = document.querySelector('.input');
+  searchButton.addEventListener('click', function() {
+    const searchTerm = searchInput.value;
+    // Use searchTerm to perform the search action
+    const newPageUrl = `/search?term=${encodeURIComponent(searchTerm)}`;
+    window.location.href = newPageUrl;
+  });
+    
+
+    const tabs = document.querySelectorAll('.tabs ul li');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const category = tab.querySelector('span').id;
+        fetchPostsByCategory(category);
+        displayPosts();
+      });
+    });
+
+    function fetchPostsByCategory(category) {
+      cur_posts = JSON.parse('{{ posts | tojson | safe }}');
+        if (category == "sexHealth"){
+          cur_posts = JSON.parse('{{ sexHealth | tojson | safe }}');
+        }
+        if (category == "drug"){
+          cur_posts = JSON.parse('{{ drug | tojson | safe }}');
+        }
+        if (category == "alcohol"){
+          cur_posts = JSON.parse('{{ alcohol | tojson | safe }}');
+        }
+        if (category == "cancer"){
+          cur_posts = JSON.parse('{{ cancer | tojson | safe }}');
+        }
+        if (category == "nutrition"){
+          cur_posts = JSON.parse('{{ nutrition | tojson | safe }}');
+        }
+        if (category == "fitness"){
+          cur_posts = JSON.parse('{{ fitness | tojson | safe }}');
+        }
+        if (category == "prescriptions"){
+          cur_posts = JSON.parse('{{ prescriptions | tojson | safe }}');
+        }
+        if (category == "vaccine"){
+          cur_posts = JSON.parse('{{ vaccine | tojson | safe }}');
+        }
+        if (category == "other"){
+          cur_posts = JSON.parse('{{ other | tojson | safe }}');
+        }
+    }
+
+    function displayPosts() {
+      const postContainer = document.querySelector('.post-container');
+      postContainer.innerHTML = ''; // Clear previous content
+      if(cur_posts!=undefined){
+      cur_posts.forEach(post => {
+        const postElement = document.createElement('div');
+        warningShown = "{{warningShown}}";
+        var showWarn = false;
+        if  (post.id == warningShown){
+          showWarn = true;
+        };
+        postElement.classList.add('post');
+        postElement.innerHTML = `
+          <div style="margin-bottom:20px;" class = "box has-background-light">
+            <div class="box"> 
+              <p class="has-text-info"> ${post.account_username} </p>
+              <span class="tag">
+                ${post.category}
+              </span>
+              <p> ${post.text}</p>
+              <a>
+                <span class="icon is-small"><i class="fa-solid fa-circle-exclamation"></i></span>
+                <span>${post.engagement}</span>
+              </a>
+              <form method="post">
+                <input type="hidden" name="type" value="awareness"></input>
+                  <input type="hidden" name="id" value="${post.id}"></input>
+              <button class="button" value="${post.id}" id="awarenessButton">      
+                </form>
+                <a>
+                  <span class="icon is-small"><i class="fa-solid fa-circle-exclamation"></i></span>
+                  <span>Bring Awareness</span>
+                </a>
+              </button>
+            </div>
+            <div class="comment-container"></div>
+            <div class = "comment-form">
+              <form method="post">
+                <div class="field">
+                  <label class="label">Comment</label>
+                  <input type="hidden" name="type" value="comment"></input>
+                  ${showWarn ? '<div> <p style="color:red;"> This comment may be harmful. Are you sure you want to post?</p> <input type="hidden" name="warn" value="warningShown"></input></div>'
+                :'<input type="hidden" name="warn" value="noWarning"></input>'}
+                  <input type="hidden" name="id" value="${post.id}"></input>
+                  <div class="control">
+                    ${showWarn ?
+                    '<textarea name= "comment" rows="2" class="textarea is-small" placeholder="Enter your comment">{%if warningShown%}{{comment}}{% endif %}</textarea>'
+                  : '<textarea name= "comment" rows="2" class="textarea is-small" placeholder="Enter your comment"></textarea>'}
+                    </div>
+                </div>
+                <div class="field">
+                  <div class="control">
+                    <button class="button is-primary">Submit</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        `;
+        const awarenessButton = postElement.querySelector('#awarenessButton');
+        if (post.engagedUsers && post.engagedUsers.includes(currentUserID)) {
+        awarenessButton.disabled = true; // Disable the button
+        }
+        const commentContainer = postElement.querySelector('.comment-container');
+        str = post.comments.replace(/'/g, "\"");
+        comments = []
+        try{
+          comments = JSON.parse(str)}
+        catch(error){
+          console.error("Error while parsing comment JSON:", error);
+        }
+        if(comments != [] && comments != "[]"){
+        comments.forEach(comment => {
+          const commentElement = document.createElement('div');
+          commentElement.classList.add('comment');
+          commentElement.innerHTML = `
+          <p style="display: inline;" class="has-text-info">${comment[0]}</p>  <p style="display: inline;">${comment[1]}</p>`;
+          commentContainer.appendChild(commentElement)
+        });
+      }
+        postContainer.appendChild(postElement);
+      });
+    }
+  }
+  });
+</script>
+  <div class="page-container">
+    <div class="filters">
+      <div class="tabs is-toggle is-toggle-rounded">
+        <ul>
+          <li>
+            <a>
+              <span id="sexHealth" class="icon is-small"><i class="fa-solid fa-baby"></i></span>
+              <span>Sexual Health</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span id="cancer" class="icon is-small"><i class="fas fa-radiation"></i></span>
+              <span>Cancer</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span id="drug" class="icon is-small"><i class="fas fa-cannabis"></i></span>
+              <span>Drugs</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span id="alcohol" class="icon is-small"><i class="fas fa-beer"></i></span>
+              <span>Alcohol</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span id="nutrition" class="icon is-small"><i class="fas fa-bread-slice"></i></span>
+              <span>Nutrition</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span id="fitness" class="icon is-small"><i class="fas fa-swimmer"></i></span>
+              <span>Fitness</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span id="prescriptions" class="icon is-small"><i class="fas fa-prescription-bottle"></i></span>
+              <span>Prescriptions</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span id="vaccine" class="icon is-small"><i class="fas fa-syringe"></i></span>
+              <span>Vaccines</span>
+            </a>
+          </li>
+          <li>
+            <a>
+              <span id="other"></span>
+              <span>Other</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="columns">
+        <div class="column is-one-quarter">
+          <div class="field has-addons">
+            <div class="control">
+              <input class="input" type="text" placeholder="Find a topic">
+            </div>
+            <div class="control">
+              <a class="button is-info">
+                Search
+              </a>
+            </div>
+          </div>
+        </div>
+      
+        <div class="column is-one-quarter">
+          <div class="select">
+            <select>
+              <option>Filter by</option>
+              <option>recent</option>
+              <option>hot</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="post-container">
+      <!-- Posts will be displayed here -->
+    </div>
+  </div>
+{% endblock content %}
